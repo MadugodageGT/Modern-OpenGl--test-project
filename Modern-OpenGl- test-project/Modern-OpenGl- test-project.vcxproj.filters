@@ -39,6 +39,9 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EBO.h">
@@ -56,6 +59,9 @@
     <ClInclude Include="Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="default.frag">
@@ -66,7 +72,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Aatrox_7.jpg">
+    <Image Include="Aatrox_7.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
