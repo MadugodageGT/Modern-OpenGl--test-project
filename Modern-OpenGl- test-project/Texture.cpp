@@ -19,8 +19,8 @@ Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum format, 
 	glBindTexture(texType, ID);
 
 	// Configures the type of algorithm that is used to make the image smaller or bigger
-	glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-	glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Configures the way the texture repeats (if it does at all)
 	glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -31,7 +31,7 @@ Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum format, 
 	// glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, flatColor);
 
 	// Assigns the image to the OpenGL Texture object
-	glTexImage2D(texType, 0, GL_RGB, widthImg, heightImg, 0, format, pixelType, bytes);
+	glTexImage2D(texType, 0, GL_RGBA, widthImg, heightImg, 0, format, pixelType, bytes);
 	// Generates MipMaps
 	glGenerateMipmap(texType);
 

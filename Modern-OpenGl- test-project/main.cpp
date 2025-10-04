@@ -3,6 +3,9 @@
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 #include<stb/stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include"Texture.h"
 #include"shaderClass.h"
@@ -55,8 +58,6 @@ int main()
 
 	//Load GLAD so it configures OpenGL
 	gladLoadGL();
-	// Specify the viewport of OpenGL in the Window
-	// In this case the viewport goes from x = 0, y = 0, to x = 800, y = 800
 	glViewport(0, 0, 800, 800);
 
 
@@ -88,24 +89,11 @@ int main()
 	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
 
-
-	/*
-	* I'm doing this relative path thing in order to centralize all the resources into one folder and not
-	* duplicate them between tutorial folders. You can just copy paste the resources from the 'Resources'
-	* folder and then give a relative path from this folder to whatever resource you want to get to.
-	* Also note that this requires C++17, so go to Project Properties, C/C++, Language, and select C++17
-	*/
-
 	// Texture
-	Texture popCat("Aatrox_7.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE);
-	popCat.texUnit(shaderProgram, "tex0", 0);
+	Texture testingTexture("Aatrox_7.PNG", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	testingTexture.texUnit(shaderProgram, "tex0", 0);
 
-	// Original code from the tutorial
-	/*Texture popCat("pop_cat.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	popCat.texUnit(shaderProgram, "tex0", 0);*/
-
-
-
+	
 	// Main while loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -118,7 +106,7 @@ int main()
 		// Assigns a value to the uniform; NOTE: Must always be done after activating the Shader Program
 		glUniform1f(uniID, 0.5f);
 		// Binds texture so that is appears in rendering
-		popCat.Bind();
+		testingTexture.Bind();
 		// Bind the VAO so OpenGL knows to use it
 		VAO1.Bind();
 		// Draw primitives, number of indices, datatype of indices, index of indices
@@ -135,7 +123,7 @@ int main()
 	VAO1.Delete();
 	VBO1.Delete();
 	EBO1.Delete();
-	popCat.Delete();
+	testingTexture.Delete();
 	shaderProgram.Delete();
 	// Delete window before ending the program
 	glfwDestroyWindow(window);
