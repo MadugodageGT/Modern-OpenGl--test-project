@@ -28,8 +28,6 @@ GLuint indices[] =
 	0, 3, 2 // Lower triangle
 };
 
-
-
 int main()
 {
 	// Initialize GLFW
