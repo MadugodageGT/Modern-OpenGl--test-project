@@ -13,6 +13,9 @@
 
 class Camera
 {
+	float deltaTime;      // Time between current frame and last frame
+	float lastFrameTime;  // Time of last frame
+
 public:
 	glm::vec3 Position;
 	glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);

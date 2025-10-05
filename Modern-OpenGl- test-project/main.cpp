@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
+
 
 #include"Texture.h"
 #include"shaderClass.h"
@@ -15,10 +17,42 @@
 #include"Camera.h"
 
 
+
 //window size variables
 const unsigned int width = 800;
 const unsigned int height = 800;
 
+//grid
+std::vector<float> gridVertices;
+
+
+
+void drawGrid(int gridSize) {
+
+	//int gridSize = 10;
+
+
+	for (int i = -gridSize; i <= gridSize; i++) {
+		// Lines parallel to Z
+		gridVertices.push_back((float)i);
+		gridVertices.push_back(0.0f);
+		gridVertices.push_back((float)-gridSize);
+
+		gridVertices.push_back((float)i);
+		gridVertices.push_back(0.0f);
+		gridVertices.push_back((float)gridSize);
+
+		// Lines parallel to X
+		gridVertices.push_back((float)-gridSize);
+		gridVertices.push_back(0.0f);
+		gridVertices.push_back((float)i);
+
+		gridVertices.push_back((float)gridSize);
+		gridVertices.push_back(0.0f);
+		gridVertices.push_back((float)i);
+	};
+
+};
 
 
 // Vertices coordinates
@@ -70,7 +104,7 @@ int main()
 	gladLoadGL();
 	glViewport(0, 0, width, height);
 
-
+	drawGrid(10);
 
 	// Generates Shader object using shaders default.vert and default.frag
 	Shader shaderProgram("default.vert", "default.frag");
@@ -95,6 +129,16 @@ int main()
 	VBO1.Unbind();
 	EBO1.Unbind();
 
+	//DRAWING A GRID
+	VAO VAO2;
+	VAO2.Bind();
+
+	VBO VBO2(gridVertices.data(), gridVertices.size() * sizeof(float));
+
+	VAO2.LinkAttrib(VBO2, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+
+	VAO2.Unbind();
+	VBO2.Unbind();
 
 	// Texture
 	Texture testingTexture("Aatrox_7.PNG", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -111,9 +155,11 @@ int main()
 	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
 
+
 	// Main while loop
 	while (!glfwWindowShouldClose(window))
 	{
+
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shaderProgram.Activate();
@@ -125,9 +171,16 @@ int main()
 
 		testingTexture.Bind();
 
-		VAO1.Bind();
+		VAO2.Bind();
+		glDrawArrays(GL_LINES, 0, gridVertices.size() / 3);
+		VAO2.Unbind();
 
+
+		VAO1.Bind();
 		glDrawElements(GL_TRIANGLES, sizeof(indices)/ sizeof(int), GL_UNSIGNED_INT, 0);
+		VAO1.Unbind();
+
+
 
 		glfwSwapBuffers(window);
 
@@ -139,6 +192,8 @@ int main()
 	// Delete all the objects we've created
 	VAO1.Delete();
 	VBO1.Delete();
+	VAO2.Delete();
+	VBO2.Delete();
 	EBO1.Delete();
 	testingTexture.Delete();
 	shaderProgram.Delete();
