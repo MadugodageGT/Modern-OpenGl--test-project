@@ -70,9 +70,18 @@
     <None Include="default.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="light.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="light.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Aatrox_7.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="white-brick-wall-texture.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
