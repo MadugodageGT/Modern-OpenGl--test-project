@@ -84,5 +84,17 @@
     <Image Include="white-brick-wall-texture.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="wooden_gate_ao_1k.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="wooden_gate_diff_1k.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="wooden_gate_diff_1k.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="wooden_gate_rough_1k.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
