@@ -1,50 +1,39 @@
 #ifndef DRONE_CLASS_H
 #define DRONE_CLASS_H
 
-#include<string>
+#include "Mesh.h"
+Mesh droneMesh;
+const Shader droneShader;
 
-#include"VAO.h"
-#include"EBO.h"
-#include"Camera.h"
+Vertex vertices[];
+GLuint indices[];
+
+glm::vec4 droneColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+glm::vec3 dronePos = glm::vec3(0.0f, 0.5f, 0.0f);
+glm::mat4 droneModel = glm::mat4(1.0f);
+
+
+int i = 0;
+float lastUpdateTime = 0.0f;
+float updateInterval = 0.25f; // 250ms in seconds
+
+struct pathPoints {
+	float timeStamp;
+	float x, y, z;
+	float vx, vy, vz;
+	float r, g, b;
+};
+
+std::vector <pathPoints> paths;
 
 class Drone {
-private:
-    glm::vec3 currentPosition;
-    glm::vec3 currentColor;
-    glm::mat4 modelMatrix;
-
-    struct PathPoint {
-        
-        float timestamp; // Time in seconds when drone should reach this point
-        glm::vec3 position;
-        glm::vec3 color;
-                         
-    };
-
-    std::vector<PathPoint> path;
-    size_t currentPathIndex;
-
-    float startTime;
-    bool isActive;
-    bool loopPath;
-
-    // Interpolation helpers
-    glm::vec3 interpolatePosition(const PathPoint& p1, const PathPoint& p2, float t);
-    glm::vec3 interpolateColor(const PathPoint& p1, const PathPoint& p2, float t);
-
 public:
-    Drone(const std::vector<PathPoint>& pathPoints, bool loop = false);
+	
+	Drone(Shader& shader);
+	void update(float time, Shader& sahder);
+	void draw(Shader& shader, Camera& camera);
+	void setPathData(std::string filePath);
 
-    void start(float currentTime);
-    void update(float currentTime);
-    void reset();
-
-    glm::mat4 getModelMatrix() const { return modelMatrix; }
-    glm::vec3 getColor() const { return currentColor; }
-    glm::vec3 getPosition() const { return currentPosition; }
-    bool isActiveState() const { return isActive; }
-
-    void setPath(const std::vector<PathPoint>& newPath);
 };
 
 

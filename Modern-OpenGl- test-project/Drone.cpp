@@ -1,90 +1,126 @@
 #include "Drone.h"
 
+Vertex vertices[] =
+{                //     COORDINATES     //
+	Vertex{glm::vec3(-0.1f, -0.1f,  0.1f)},
+	Vertex{glm::vec3(-0.1f, -0.1f, -0.1f)},
+	Vertex{glm::vec3(0.1f, -0.1f, -0.1f)},
+	Vertex{glm::vec3(0.1f, -0.1f,  0.1f)},
+	Vertex{glm::vec3(-0.1f,  0.1f,  0.1f)},
+	Vertex{glm::vec3(-0.1f,  0.1f, -0.1f)},
+	Vertex{glm::vec3(0.1f,  0.1f, -0.1f)},
+	Vertex{glm::vec3(0.1f,  0.1f,  0.1f)}
+};
 
-Drone::Drone(const std::vector<PathPoint>& pathPoints, bool loop)
-    : path(pathPoints), currentPathIndex(0), startTime(0.0f),
-    isActive(false), loopPath(loop), modelMatrix(glm::mat4(1.0f))
+GLuint indices[] =
 {
-    if (!path.empty()) {
-        currentPosition = path[0].position;
-        currentColor = path[0].color;
-    }
+	0, 1, 2,
+	0, 2, 3,
+	0, 4, 7,
+	0, 7, 3,
+	3, 7, 6,
+	3, 6, 2,
+	2, 6, 5,
+	2, 5, 1,
+	1, 5, 4,
+	1, 4, 0,
+	4, 5, 6,
+	4, 6, 7
+};
+
+
+Drone::Drone(Shader& shader) {
+
+	//to be removed
+
+	//textures
+	Texture textures[]
+	{
+		Texture("wooden_gate_diff_1k.jpg","diffuse", 0 , GL_RGB, GL_UNSIGNED_BYTE),
+		Texture("wooden_gate_rough_1k.png","specular", 1 , GL_RED, GL_UNSIGNED_BYTE)
+	};
+
+	//to be removed 
+
+	std::vector <Vertex> droneVerts(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
+	std::vector <GLuint> droneInds(indices, indices + sizeof(indices) / sizeof(GLuint));
+	std::vector <Texture> tex(textures, textures + sizeof(textures) / sizeof(Texture)); // to be removed
+	
+	droneMesh = Mesh(droneVerts, droneInds, tex);
+
+	droneColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	dronePos = glm::vec3(0.0f, 0.5f, 0.0f);
+	droneModel = glm::mat4(1.0f);
+	droneModel = glm::translate(droneModel, dronePos);
+	
+	shader.Activate();
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(droneModel));
+	glUniform4f(glGetUniformLocation(shader.ID, "lightColor"), droneColor.x, droneColor.y, droneColor.z, droneColor.w);
 }
 
-void Drone::start(float currentTime) {
-    startTime = currentTime;
-    isActive = true;
-    currentPathIndex = 0;
+
+void Drone::setPathData(std::string filePath) {
+
+
+	std::fstream file;
+	file.open(filePath, std::ios::in);
+
+	if (file.is_open()) {
+
+		std::string line;
+		std::getline(file, line); // Skip header line
+
+		while (getline(file, line)) {
+
+			std::stringstream iss(line);
+
+			pathPoints V;
+
+			iss >> V.timeStamp >> V.x >> V.y >> V.z >> V.vx >> V.vy >> V.vz >> V.r >> V.g >> V.b;
+
+			paths.push_back(V);
+		}
+		std::cout << "success!" << std::endl;
+		file.close();
+
+	}
+	else
+	{
+		std::cout << "Unable to open file" << std::endl;
+	}
+
 }
 
-void Drone::update(float currentTime) {
-    if (!isActive || path.size() < 2) return;
+void Drone::update(float time, Shader& shader) {
+	if (time - lastUpdateTime >= updateInterval) {
+		i++;
+		if (i >= paths.size()) {
+			i = 0; // Loop back to start
+		}
+		lastUpdateTime = time; // Update the last time we changed
+	}
 
-    float elapsedTime = currentTime - startTime;
+	// Set position and color from current path point
+	dronePos.x = paths[i].x;
+	dronePos.y = paths[i].z;
+	dronePos.z = paths[i].y;
 
-    // Find which segment we're on
-    while (currentPathIndex < path.size() - 1) {
-        if (elapsedTime <= path[currentPathIndex + 1].timestamp) {
-            break;
-        }
-        currentPathIndex++;
-    }
+	droneColor.r = paths[i].r;
+	droneColor.g = paths[i].g;
+	droneColor.b = paths[i].b;
 
-    // Check if we've reached the end
-    if (currentPathIndex >= path.size() - 1) {
-        if (loopPath) {
-            // Restart from beginning
-            startTime = currentTime;
-            currentPathIndex = 0;
-            elapsedTime = 0.0f;
-        }
-        else {
-            // Stay at final position
-            currentPosition = path.back().position;
-            currentColor = path.back().color;
-            isActive = false;
-            modelMatrix = glm::translate(glm::mat4(1.0f), currentPosition);
-            return;
-        }
-    }
+	// Update matrices and uniforms
+	droneModel = glm::mat4(1.0f);
+	droneModel = glm::translate(droneModel, dronePos);
 
-    // Interpolate between current and next path point
-    const PathPoint& p1 = path[currentPathIndex];
-    const PathPoint& p2 = path[currentPathIndex + 1];
-
-    float segmentDuration = p2.timestamp - p1.timestamp;
-    float segmentElapsed = elapsedTime - p1.timestamp;
-    float t = segmentElapsed / segmentDuration; // 0 to 1
-    t = glm::clamp(t, 0.0f, 1.0f);
-
-    // Smooth interpolation (optional - use linear or smoothstep)
-    // t = t * t * (3.0f - 2.0f * t); // smoothstep
-
-    currentPosition = interpolatePosition(p1, p2, t);
-    currentColor = interpolateColor(p1, p2, t);
-
-    // Update model matrix
-    modelMatrix = glm::translate(glm::mat4(1.0f), currentPosition);
+	shader.Activate();
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(droneModel));
+	glUniform4f(glGetUniformLocation(shader.ID, "lightColor"), droneColor.x, droneColor.y, droneColor.z, droneColor.w);
 }
 
-void Drone::reset() {
-    currentPathIndex = 0;
-    isActive = false;
-    if (!path.empty()) {
-        currentPosition = path[0].position;
-        currentColor = path[0].color;
-    }
-}
 
-void Drone::setPath(const std::vector<PathPoint>& newPath) {
-    path = newPath;
-    reset();
-}
+void Drone::draw(Shader& shader, Camera& camera) {
 
-glm::vec3 Drone::interpolatePosition(const PathPoint& p1, const PathPoint& p2, float t) {
-    return glm::mix(p1.position, p2.position, t);
-}
+	droneMesh.Draw(shader, camera);
 
-glm::vec3 Drone::interpolateColor(const PathPoint& p1, const PathPoint& p2, float t) {
-    return glm::mix(p1.color, p2.color, t);
 }

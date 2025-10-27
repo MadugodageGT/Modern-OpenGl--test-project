@@ -55,6 +55,52 @@ GLuint lightIndices[] =
 	4, 6, 7
 };
 
+
+struct pathPoints {
+	float timeStamp;
+	float x, y, z;
+	float vx, vy, vz;
+	float r, g, b;
+};
+
+
+std::vector <pathPoints> paths; 
+
+bool isActive = false;
+
+void getPathData(std::string filepath) {
+
+
+	std::fstream file;
+	file.open(filepath, std::ios::in);
+
+	if (file.is_open()) {
+
+		std::string line;
+		std::getline(file, line); // Skip header line
+
+		while (getline(file, line)) {
+
+			std::stringstream iss(line);
+
+			pathPoints V;
+
+			iss >> V.timeStamp >> V.x >> V.y >> V.z >> V.vx >> V.vy >> V.vz >> V.r >> V.g >> V.b;
+
+			paths.push_back(V);
+		}
+		std::cout << "success!" << std::endl;
+		file.close();
+
+	}
+	else
+	{
+		std::cout << "Unable to open file" << std::endl;
+	}
+
+}
+
+
 int main()
 {
 	// Initialize GLFW
@@ -84,6 +130,8 @@ int main()
 	gladLoadGL();
 	glViewport(0, 0, width, height);
 
+
+	getPathData("path_data/Drone 1.txt");
 
 	//textures
 	Texture textures[]
@@ -134,29 +182,58 @@ int main()
 	//enable the depth test
 	glEnable(GL_DEPTH_TEST);
 
-	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
+	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 10.0f));
 
-
+	int i = 0;
+	float lastUpdateTime = 0.0f;
+	float updateInterval = 0.25f; // 250ms in seconds
 
 	// Main while loop
 	while (!glfwWindowShouldClose(window))
 	{
-
-		//glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 		glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
+		// Animating the light cube every 250ms
+		float time = glfwGetTime();
+
+		if (time - lastUpdateTime >= updateInterval) {
+			i++;
+			if (i >= paths.size()) {
+				i = 0; // Loop back to start
+			}
+			lastUpdateTime = time; // Update the last time we changed
+		}
+
+		// Set position and color from current path point
+		lightPos.x = paths[i].x;
+		lightPos.y = paths[i].z;
+		lightPos.z = paths[i].y;
+
+		lightColor.r = paths[i].r;
+		lightColor.g = paths[i].g;
+		lightColor.b = paths[i].b;
+
+		// Update matrices and uniforms
+		lightModel = glm::mat4(1.0f);
+		lightModel = glm::translate(lightModel, lightPos);
+
+		lightShader.Activate();
+		glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+		glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+
+		shaderProgram.Activate();
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+		glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+		glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 		camera.Inputs(window);
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
-		
+
 		floor.Draw(shaderProgram, camera);
 		lightCube.Draw(lightShader, camera);
 
-
-
 		glfwSwapBuffers(window);
-
 		glfwPollEvents();
 	}
 
