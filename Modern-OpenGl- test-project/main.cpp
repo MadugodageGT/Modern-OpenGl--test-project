@@ -99,7 +99,7 @@ int main()
 	std::vector <GLuint> inds(indices, indices + sizeof(indices) / sizeof(GLuint));
 	std::vector <Texture> tex(textures, textures + sizeof(textures) / sizeof(Texture));
 	
-	Drone floor(verts, inds, tex);
+	Mesh floor(verts, inds, tex);
 
 	
 	
@@ -110,7 +110,7 @@ int main()
 	std::vector <Vertex> lightVerts(lightVertices, lightVertices + sizeof(lightVertices)/ sizeof(Vertex));
 	std::vector <GLuint> lightInds(lightIndices, lightIndices + sizeof(lightIndices)/ sizeof(GLuint));
 
-	Drone lightCube(lightVerts, lightInds, tex);
+	Mesh lightCube(lightVerts, lightInds, tex);
 
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightPos = glm::vec3(0.0f, 0.5f, 0.0f);

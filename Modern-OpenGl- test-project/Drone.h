@@ -7,18 +7,45 @@
 #include"EBO.h"
 #include"Camera.h"
 
-class Drone
-{
+class Drone {
+private:
+    glm::vec3 currentPosition;
+    glm::vec3 currentColor;
+    glm::mat4 modelMatrix;
+
+    struct PathPoint {
+        
+        float timestamp; // Time in seconds when drone should reach this point
+        glm::vec3 position;
+        glm::vec3 color;
+                         
+    };
+
+    std::vector<PathPoint> path;
+    size_t currentPathIndex;
+
+    float startTime;
+    bool isActive;
+    bool loopPath;
+
+    // Interpolation helpers
+    glm::vec3 interpolatePosition(const PathPoint& p1, const PathPoint& p2, float t);
+    glm::vec3 interpolateColor(const PathPoint& p1, const PathPoint& p2, float t);
+
 public:
-	std::vector <Vertex> vertices;
-	std::vector <GLuint> indices;
-	// Store VAO in public so it can be used in the Draw function
-	VAO VAO;
+    Drone(const std::vector<PathPoint>& pathPoints, bool loop = false);
 
-	// Initializes the mesh
-	Drone(std::vector <Vertex>& vertices, std::vector <GLuint>& indices);
+    void start(float currentTime);
+    void update(float currentTime);
+    void reset();
 
-	// Draws the mesh
-	void Draw(Shader& shader, Camera& camera);
+    glm::mat4 getModelMatrix() const { return modelMatrix; }
+    glm::vec3 getColor() const { return currentColor; }
+    glm::vec3 getPosition() const { return currentPosition; }
+    bool isActiveState() const { return isActive; }
+
+    void setPath(const std::vector<PathPoint>& newPath);
 };
+
+
 #endif

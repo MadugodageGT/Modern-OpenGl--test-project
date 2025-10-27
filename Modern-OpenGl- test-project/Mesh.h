@@ -8,7 +8,7 @@
 #include"Camera.h"
 #include"Texture.h"
 
-class Drone
+class Mesh
 {
 public:
 	std::vector <Vertex> vertices;
@@ -18,7 +18,7 @@ public:
 	VAO VAO;
 
 	// Initializes the mesh
-	Drone(std::vector <Vertex>& vertices, std::vector <GLuint>& indices, std::vector <Texture>& textures);
+	Mesh(std::vector <Vertex>& vertices, std::vector <GLuint>& indices, std::vector <Texture>& textures);
 
 	// Draws the mesh
 	void Draw(Shader& shader, Camera& camera);

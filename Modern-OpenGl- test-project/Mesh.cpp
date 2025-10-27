@@ -1,10 +1,10 @@
 #include "Mesh.h"
 
-Drone::Drone(std::vector <Vertex>& vertices, std::vector <GLuint>& indices, std::vector <Texture>& textures)
+Mesh::Mesh(std::vector <Vertex>& vertices, std::vector <GLuint>& indices, std::vector <Texture>& textures)
 {
-	Drone::vertices = vertices;
-	Drone::indices = indices;
-	Drone::textures = textures;
+	Mesh::vertices = vertices;
+	Mesh::indices = indices;
+	Mesh::textures = textures;
 
 	VAO.Bind();
 	// Generates Vertex Buffer Object and links it to vertices
@@ -23,7 +23,7 @@ Drone::Drone(std::vector <Vertex>& vertices, std::vector <GLuint>& indices, std:
 }
 
 
-void Drone::Draw(Shader& shader, Camera& camera)
+void Mesh::Draw(Shader& shader, Camera& camera)
 {
 	// Bind shader to be able to access uniforms
 	shader.Activate();
