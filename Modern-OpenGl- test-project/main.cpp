@@ -1,6 +1,6 @@
 
 #include"Mesh.h"
-
+#include "Drone.h"
 
 //window size variables
 const unsigned int width = 800;
@@ -56,51 +56,6 @@ GLuint lightIndices[] =
 };
 
 
-struct pathPoints {
-	float timeStamp;
-	float x, y, z;
-	float vx, vy, vz;
-	float r, g, b;
-};
-
-
-std::vector <pathPoints> paths; 
-
-bool isActive = false;
-
-void getPathData(std::string filepath) {
-
-
-	std::fstream file;
-	file.open(filepath, std::ios::in);
-
-	if (file.is_open()) {
-
-		std::string line;
-		std::getline(file, line); // Skip header line
-
-		while (getline(file, line)) {
-
-			std::stringstream iss(line);
-
-			pathPoints V;
-
-			iss >> V.timeStamp >> V.x >> V.y >> V.z >> V.vx >> V.vy >> V.vz >> V.r >> V.g >> V.b;
-
-			paths.push_back(V);
-		}
-		std::cout << "success!" << std::endl;
-		file.close();
-
-	}
-	else
-	{
-		std::cout << "Unable to open file" << std::endl;
-	}
-
-}
-
-
 int main()
 {
 	// Initialize GLFW
@@ -131,62 +86,36 @@ int main()
 	glViewport(0, 0, width, height);
 
 
-	getPathData("path_data/Drone 1.txt");
-
-	//textures
-	Texture textures[]
-	{
-		Texture("wooden_gate_diff_1k.jpg","diffuse", 0 , GL_RGB, GL_UNSIGNED_BYTE),
-		Texture("wooden_gate_rough_1k.png","specular", 1 , GL_RED, GL_UNSIGNED_BYTE)
-	};
-	
-	// Generates Shader object using shaders default.vert and default.frag
-	Shader shaderProgram("default.vert", "default.frag");
-
-	std::vector <Vertex> verts(vertices, vertices + sizeof(vertices)/sizeof(Vertex));
-	std::vector <GLuint> inds(indices, indices + sizeof(indices) / sizeof(GLuint));
-	std::vector <Texture> tex(textures, textures + sizeof(textures) / sizeof(Texture));
-	
-	Mesh floor(verts, inds, tex);
-
-	
-	
-	//lighting cube
 
 	Shader lightShader("light.vert", "light.frag");
-	
-	std::vector <Vertex> lightVerts(lightVertices, lightVertices + sizeof(lightVertices)/ sizeof(Vertex));
-	std::vector <GLuint> lightInds(lightIndices, lightIndices + sizeof(lightIndices)/ sizeof(GLuint));
 
-	Mesh lightCube(lightVerts, lightInds, tex);
+	std::vector <Drone> drones;
 
-	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	glm::vec3 lightPos = glm::vec3(0.0f, 0.5f, 0.0f);
-	glm::mat4 lightModel = glm::mat4(1.0f);
-	lightModel = glm::translate(lightModel,lightPos);
+	int droneCount = 25;
+	std::cout << "Creating " << droneCount << " drones..." << std::endl;
 
-	glm::vec3 pyramidePos = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::mat4 pyramidModel = glm::mat4(1.0f);
-	pyramidModel = glm::translate(pyramidModel, pyramidePos);
+	for (int j = 0; j < droneCount; j++) {
+		try {
+			// Use emplace_back with the shader
+			drones.emplace_back(lightShader);
 
-	lightShader.Activate();
-	glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
-	glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	shaderProgram.Activate();
-	glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
-	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+			// Load path data for this drone
+			std::string pathFile = "path_data/Drone " + std::to_string(j + 1) + ".txt";
+			drones.back().setPathData(pathFile);
 
+			std::cout << "Drone " << (j + 1) << " created successfully." << std::endl;
+		}
+		catch (const std::exception& e) {
+			std::cerr << "Error creating drone " << (j + 1) << ": " << e.what() << std::endl;
+		}
+	}
 
+	std::cout << "All drones created. Starting render loop..." << std::endl;
 
 	//enable the depth test
 	glEnable(GL_DEPTH_TEST);
 
 	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 10.0f));
-
-	int i = 0;
-	float lastUpdateTime = 0.0f;
-	float updateInterval = 0.25f; // 250ms in seconds
 
 	// Main while loop
 	while (!glfwWindowShouldClose(window))
@@ -194,44 +123,24 @@ int main()
 		glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Animating the light cube every 250ms
-		float time = glfwGetTime();
 
-		if (time - lastUpdateTime >= updateInterval) {
-			i++;
-			if (i >= paths.size()) {
-				i = 0; // Loop back to start
-			}
-			lastUpdateTime = time; // Update the last time we changed
+		for (auto& d : drones) {
+		
+			d.update((float)glfwGetTime(), lightShader);
 		}
 
-		// Set position and color from current path point
-		lightPos.x = paths[i].x;
-		lightPos.y = paths[i].z;
-		lightPos.z = paths[i].y;
 
-		lightColor.r = paths[i].r;
-		lightColor.g = paths[i].g;
-		lightColor.b = paths[i].b;
 
-		// Update matrices and uniforms
-		lightModel = glm::mat4(1.0f);
-		lightModel = glm::translate(lightModel, lightPos);
-
-		lightShader.Activate();
-		glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
-		glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-
-		shaderProgram.Activate();
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
-		glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-		glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 		camera.Inputs(window);
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
 
-		floor.Draw(shaderProgram, camera);
-		lightCube.Draw(lightShader, camera);
+
+		for (auto& d : drones) {
+
+			d.draw(lightShader, camera);
+		}
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -239,7 +148,6 @@ int main()
 
 	// Delete all the objects we've created
 
-	shaderProgram.Delete();
 	lightShader.Delete();
 
 	// Delete window before ending the program

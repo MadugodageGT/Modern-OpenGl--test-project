@@ -1,21 +1,11 @@
 #ifndef DRONE_CLASS_H
 #define DRONE_CLASS_H
-
 #include "Mesh.h"
-Mesh droneMesh;
-const Shader droneShader;
-
-Vertex vertices[];
-GLuint indices[];
-
-glm::vec4 droneColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-glm::vec3 dronePos = glm::vec3(0.0f, 0.5f, 0.0f);
-glm::mat4 droneModel = glm::mat4(1.0f);
-
-
-int i = 0;
-float lastUpdateTime = 0.0f;
-float updateInterval = 0.25f; // 250ms in seconds
+#include <vector>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 struct pathPoints {
 	float timeStamp;
@@ -24,17 +14,27 @@ struct pathPoints {
 	float r, g, b;
 };
 
-std::vector <pathPoints> paths;
-
 class Drone {
+private:
+	Mesh* droneMesh;  // Use pointer instead
+	glm::vec4 droneColor;
+	glm::vec3 dronePos;
+	glm::mat4 droneModel;
+
+	int i;
+	float lastUpdateTime;
+	float updateInterval;
+
+	std::vector<pathPoints> paths;
+
+
 public:
-	
 	Drone(Shader& shader);
-	void update(float time, Shader& sahder);
+	~Drone();  // Add destructor to clean up pointer
+
+	void update(float time, Shader& shader);
 	void draw(Shader& shader, Camera& camera);
 	void setPathData(std::string filePath);
-
 };
-
 
 #endif
