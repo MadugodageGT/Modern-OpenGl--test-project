@@ -41,20 +41,18 @@ Drone::Drone(Shader& shader)
 	droneMesh = new Mesh(droneVerts, droneInds, tex);
 
 	droneModel = glm::translate(droneModel, dronePos);
-
 	shader.Activate();
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(droneModel));
 	glUniform4f(glGetUniformLocation(shader.ID, "lightColor"), droneColor.x, droneColor.y, droneColor.z, droneColor.w);
 }
 
 Drone::~Drone() {
-	delete droneMesh;  // Clean up allocated memory
+	delete droneMesh;
 }
 
 void Drone::setPathData(std::string filePath) {
 	std::fstream file;
 	file.open(filePath, std::ios::in);
-
 	if (file.is_open()) {
 		std::string line;
 		std::getline(file, line); // Skip header line
@@ -65,44 +63,56 @@ void Drone::setPathData(std::string filePath) {
 			iss >> V.timeStamp >> V.x >> V.y >> V.z >> V.vx >> V.vy >> V.vz >> V.r >> V.g >> V.b;
 			paths.push_back(V);
 		}
-
 		std::cout << "Path data loaded successfully! " << paths.size() << " points." << std::endl;
 		file.close();
+
+		// IMPORTANT: Set initial position immediately after loading path data
+		if (!paths.empty()) {
+			dronePos.x = paths[0].x;
+			dronePos.y = paths[0].z;  // Swapping y and z
+			dronePos.z = paths[0].y;
+			droneColor.r = paths[0].r;
+			droneColor.g = paths[0].g;
+			droneColor.b = paths[0].b;
+
+			std::cout << "  Initial position: (" << dronePos.x << ", "
+				<< dronePos.y << ", " << dronePos.z << ")" << std::endl;
+		}
 	}
 	else {
 		std::cout << "Unable to open file: " << filePath << std::endl;
 	}
 }
 
-void Drone::update(float time, Shader& shader) {
-	if (paths.empty()) return;  // Safety check
+void Drone::update(float time) {
+	if (paths.empty()) return;
 
 	if (time - lastUpdateTime >= updateInterval) {
 		i++;
-		if (i >= paths.size()) {
-			i = 0; // Loop back to start
-		}
+		if (i >= paths.size()) i = 0;
 		lastUpdateTime = time;
 	}
 
-	// Set position and color from current path point
 	dronePos.x = paths[i].x;
-	dronePos.y = paths[i].z;  // Swapping y and z (assuming your coordinate system)
+	dronePos.y = paths[i].z;
 	dronePos.z = paths[i].y;
-
 	droneColor.r = paths[i].r;
 	droneColor.g = paths[i].g;
 	droneColor.b = paths[i].b;
 
-	// Update matrices and uniforms
+	// Just compute model matrix
 	droneModel = glm::mat4(1.0f);
 	droneModel = glm::translate(droneModel, dronePos);
-
-	shader.Activate();
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(droneModel));
-	glUniform4f(glGetUniformLocation(shader.ID, "lightColor"), droneColor.r, droneColor.g, droneColor.b, droneColor.w);
 }
 
+
 void Drone::draw(Shader& shader, Camera& camera) {
-	droneMesh->Draw(shader, camera);  // Use pointer dereference
+	shader.Activate();
+	camera.Matrix(shader, "camMatrix");
+
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(droneModel));
+	glUniform4f(glGetUniformLocation(shader.ID, "lightColor"),
+		droneColor.r, droneColor.g, droneColor.b, droneColor.w);
+
+	droneMesh->Draw(shader, camera);
 }

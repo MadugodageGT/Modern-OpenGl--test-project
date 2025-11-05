@@ -32,7 +32,7 @@ public:
 	Drone(Shader& shader);
 	~Drone();  // Add destructor to clean up pointer
 
-	void update(float time, Shader& shader);
+	void update(float time);
 	void draw(Shader& shader, Camera& camera);
 	void setPathData(std::string filePath);
 };
