@@ -60,7 +60,7 @@ void Drone::setPathData(std::string filePath) {
 		while (getline(file, line)) {
 			std::stringstream iss(line);
 			pathPoints V;
-			iss >> V.timeStamp >> V.x >> V.y >> V.z >> V.vx >> V.vy >> V.vz >> V.r >> V.g >> V.b;
+			iss >> V.x >> V.y >> V.z >> V.r >> V.g >> V.b;
 			paths.push_back(V);
 		}
 		std::cout << "Path data loaded successfully! " << paths.size() << " points." << std::endl;

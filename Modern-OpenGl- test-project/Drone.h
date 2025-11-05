@@ -8,9 +8,7 @@
 #include <iostream>
 
 struct pathPoints {
-	float timeStamp;
 	float x, y, z;
-	float vx, vy, vz;
 	float r, g, b;
 };
 

@@ -87,7 +87,7 @@ int main()
 	for (int j = 0; j < droneCount; j++) {
 		try {
 			drones.emplace_back(lightShader);
-			std::string pathFile = "path_data_2/Drone " + std::to_string(j + 1) + ".txt";
+			std::string pathFile = "path_data_new/Drone " + std::to_string(j + 1) + ".txt";
 			drones.back().setPathData(pathFile);
 		}
 		catch (const std::exception& e) {
@@ -99,7 +99,7 @@ int main()
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 
-	Camera camera(width, height, glm::vec3(0.0f, 20.0f, 50.0f)); // Further back
+	Camera camera(width, height, glm::vec3(0.0f, 20.0f, 70.0f)); // Further back
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -114,7 +114,7 @@ int main()
 
 		// Update camera
 		camera.Inputs(window);
-		camera.updateMatrix(45.0f, 0.1f, 100.0f);
+		camera.updateMatrix(45.0f, 0.1f, 300.0f);
 
 		// Draw grid and axes
 		//grid.Draw(gridShader, camera);
