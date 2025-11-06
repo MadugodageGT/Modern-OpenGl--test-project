@@ -74,6 +74,9 @@
     <ClInclude Include="Drone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="default.frag">
@@ -88,6 +91,8 @@
     <None Include="light.frag">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="grid.frag" />
+    <None Include="grid.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Aatrox_7.png">
